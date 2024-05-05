@@ -17,7 +17,7 @@ namespace NGitLab.Mock.Clients
             throw new System.NotImplementedException();
         }
 
-        public IEnumerable<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
+        public GitLabCollectionResponse<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
         {
             throw new System.NotImplementedException();
         }

@@ -41,7 +41,7 @@ namespace NGitLab.Impl
             return _api.Put().With(formData).ToAsync<Package>(url, cancellationToken);
         }
 
-        public IEnumerable<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
+        public GitLabCollectionResponse<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
         {
             var url = CreateGetUrl(projectId, packageQuery);
             return _api.Get().GetAllAsync<PackageSearchResult>(url);

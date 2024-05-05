@@ -20,7 +20,7 @@ namespace NGitLab
         /// <param name="projectId">The project id to search for packages in.</param>
         /// <param name="packageQuery">The query parameters to be used for the search.</param>
         /// <returns></returns>
-        IEnumerable<PackageSearchResult> Get(int projectId, PackageQuery packageQuery);
+        GitLabCollectionResponse<PackageSearchResult> Get(int projectId, PackageQuery packageQuery);
 
         /// <summary>
         /// Gets a single project package using the provided project and package ids.
