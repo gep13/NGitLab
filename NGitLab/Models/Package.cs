@@ -27,13 +27,13 @@ namespace NGitLab.Models
         public int FileStore { get; set; }
 
         [JsonPropertyName("file_md5")]
-        public string FileMD5 { get; set; }
+        public string FileMd5 { get; set; }
 
         [JsonPropertyName("file_sha1")]
-        public string FileSHA1 { get; set; }
+        public string FileSha1 { get; set; }
 
         [JsonPropertyName("file_sha256")]
-        public string FileSHA256 { get; set; }
+        public string FileSha256 { get; set; }
 
         [JsonPropertyName("file_name")]
         public string FileName { get; set; }
