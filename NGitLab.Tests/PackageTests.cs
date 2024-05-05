@@ -26,7 +26,7 @@ namespace NGitLab.Tests
                 PackageStream = File.OpenRead("../../../../README.md"),
             };
 
-            var newGenericPackage = await packagesClient.PublishAsync(project.Id, packagePublish);
+            var newGenericPackage = await packagesClient.PublishGenericPackageAsync(project.Id, packagePublish);
 
             var packageQuery = new PackageQuery { PackageType = PackageType.generic };
             var genericPackages = packagesClient.Get(project.Id, packageQuery).ToList();

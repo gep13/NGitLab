@@ -20,7 +20,7 @@ namespace NGitLab.Impl
             _api = api;
         }
 
-        public Task<Package> PublishAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
+        public Task<Package> PublishGenericPackageAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
         {
             var formData = new FileContent(packagePublish.PackageStream);
 

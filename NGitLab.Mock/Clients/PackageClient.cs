@@ -12,7 +12,7 @@ namespace NGitLab.Mock.Clients
         {
         }
 
-        public Task<Package> PublishAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
+        public Task<Package> PublishGenericPackageAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }

@@ -12,7 +12,7 @@ namespace NGitLab
         /// </summary>
         /// <param name="packagePublish">The information about the package file to publish.</param>
         /// <returns>The package if it was created. Null if not.</returns>
-        Task<Package> PublishAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default);
+        Task<Package> PublishGenericPackageAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all project packages based on the provided query parameters.
