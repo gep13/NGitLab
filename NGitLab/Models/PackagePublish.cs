@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace NGitLab.Models
 {
@@ -12,6 +13,6 @@ namespace NGitLab.Models
 
         public string FileName { get; set; }
 
-        public string Status { get; set; }
+        public PackagePublishStatus? Status { get; set; }
     }
 }

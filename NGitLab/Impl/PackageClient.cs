@@ -9,7 +9,7 @@ namespace NGitLab.Impl
 {
     public class PackageClient : IPackageClient
     {
-        private const string PublishPackageUrl = "/projects/{0}/packages/generic/{1}/{2}/{3}?status={4}&select=package_file";
+        private const string PublishPackageUrl = "/projects/{0}/packages/generic/{1}/{2}/{3}";
         private const string GetPackagesUrl = "/projects/{0}/packages";
         private const string GetPackageUrl = "/projects/{0}/packages/{1}";
 
@@ -24,10 +24,21 @@ namespace NGitLab.Impl
         {
             var formData = new FileContent(packagePublish.PackageStream);
 
-            return _api.Put().With(formData).ToAsync<Package>(string.Format(CultureInfo.InvariantCulture,
-                PublishPackageUrl, projectId, Uri.EscapeDataString(packagePublish.PackageName),
-                Uri.EscapeDataString(packagePublish.PackageVersion), Uri.EscapeDataString(packagePublish.FileName),
-                Uri.EscapeDataString(packagePublish.Status)), cancellationToken);
+            var url = string.Format(CultureInfo.InvariantCulture, PublishPackageUrl,
+                projectId,
+                Uri.EscapeDataString(packagePublish.PackageName),
+                Uri.EscapeDataString(packagePublish.PackageVersion),
+                Uri.EscapeDataString(packagePublish.FileName));
+
+            if (packagePublish.Status.HasValue)
+            {
+                url = Utils.AddParameter(url, "status", packagePublish.Status.Value);
+            }
+
+            // Make GitLab return information about the uploaded file (by default, the respone is empty)
+            url = Utils.AddParameter(url, "select", "package_file");
+
+            return _api.Put().With(formData).ToAsync<Package>(url, cancellationToken);
         }
 
         public IEnumerable<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
