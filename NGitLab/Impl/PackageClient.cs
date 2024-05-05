@@ -20,12 +20,12 @@ namespace NGitLab.Impl
             _api = api;
         }
 
-        public Task<Package> PublishGenericPackageAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
+        public Task<Package> PublishGenericPackageAsync(ProjectId projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
         {
             var formData = new FileContent(packagePublish.FileStream);
 
             var url = string.Format(CultureInfo.InvariantCulture, PublishPackageUrl,
-                projectId,
+                projectId.ValueAsUriParameter(),
                 Uri.EscapeDataString(packagePublish.PackageName),
                 Uri.EscapeDataString(packagePublish.PackageVersion),
                 Uri.EscapeDataString(packagePublish.FileName));
@@ -41,20 +41,20 @@ namespace NGitLab.Impl
             return _api.Put().With(formData).ToAsync<Package>(url, cancellationToken);
         }
 
-        public GitLabCollectionResponse<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
+        public GitLabCollectionResponse<PackageSearchResult> Get(ProjectId projectId, PackageQuery packageQuery)
         {
             var url = CreateGetUrl(projectId, packageQuery);
             return _api.Get().GetAllAsync<PackageSearchResult>(url);
         }
 
-        public Task<PackageSearchResult> GetByIdAsync(int projectId, long packageId, CancellationToken cancellationToken = default)
+        public Task<PackageSearchResult> GetByIdAsync(ProjectId projectId, long packageId, CancellationToken cancellationToken = default)
         {
-            return _api.Get().ToAsync<PackageSearchResult>(string.Format(CultureInfo.InvariantCulture, GetPackageUrl, projectId, packageId), cancellationToken);
+            return _api.Get().ToAsync<PackageSearchResult>(string.Format(CultureInfo.InvariantCulture, GetPackageUrl, projectId.ValueAsUriParameter(), packageId), cancellationToken);
         }
 
-        private static string CreateGetUrl(int projectId, PackageQuery query)
+        private static string CreateGetUrl(ProjectId projectId, PackageQuery query)
         {
-            var url = string.Format(CultureInfo.InvariantCulture, GetPackagesUrl, projectId);
+            var url = string.Format(CultureInfo.InvariantCulture, GetPackagesUrl, projectId.ValueAsUriParameter());
 
             url = Utils.AddParameter(url, "order_by", query.OrderBy);
             url = Utils.AddParameter(url, "sort", query.Sort);

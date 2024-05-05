@@ -12,17 +12,17 @@ namespace NGitLab.Mock.Clients
         {
         }
 
-        public Task<Package> PublishGenericPackageAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
+        public Task<Package> PublishGenericPackageAsync(ProjectId projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public GitLabCollectionResponse<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
+        public GitLabCollectionResponse<PackageSearchResult> Get(ProjectId projectId, PackageQuery packageQuery)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<PackageSearchResult> GetByIdAsync(int projectId, long packageId, CancellationToken cancellationToken = default)
+        public Task<PackageSearchResult> GetByIdAsync(ProjectId projectId, long packageId, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
