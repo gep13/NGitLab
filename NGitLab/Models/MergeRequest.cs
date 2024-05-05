@@ -32,8 +32,14 @@ public class MergeRequest
     [JsonPropertyName("description")]
     public string Description;
 
+    [JsonPropertyName("user_notes_count")]
+    public int UserNotesCount;
+
     [JsonPropertyName("downvotes")]
     public int Downvotes;
+
+    [JsonPropertyName("draft")]
+    public bool Draft;
 
     [JsonPropertyName("upvotes")]
     public int Upvotes;
@@ -56,6 +62,7 @@ public class MergeRequest
     [JsonPropertyName("target_project_id")]
     public int TargetProjectId;
 
+    [Obsolete("Deprecated by GitLab. Use Draft instead")]
     [JsonPropertyName("work_in_progress")]
     public bool? WorkInProgress;
 
@@ -139,6 +146,9 @@ public class MergeRequest
 
     [JsonPropertyName("detailed_merge_status")]
     public DynamicEnum<DetailedMergeStatus> DetailedMergeStatus { get; set; }
+
+    [JsonPropertyName("merge_error")]
+    public string MergeError { get; set; }
 
     public override string ToString() => $"!{Id.ToStringInvariant()}: {Title}";
 }

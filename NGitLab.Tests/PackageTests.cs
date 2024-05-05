@@ -34,9 +34,9 @@ namespace NGitLab.Tests
             var genericPackages = packagesClient.Get(project.Id, packageQuery).ToList();
             var singleGenericPackage = await packagesClient.GetByIdAsync(project.Id, newGenericPackage.PackageId);
 
-            Assert.AreEqual(1, genericPackages.Count);
-            Assert.AreEqual(newGenericPackage.PackageId, genericPackages[0].PackageId);
-            Assert.AreEqual(singleGenericPackage.PackageId, newGenericPackage.PackageId);
+            Assert.That(genericPackages.Count, Is.EqualTo(1));
+            Assert.That(genericPackages[0].PackageId, Is.EqualTo(newGenericPackage.PackageId));
+            Assert.That(singleGenericPackage.PackageId, Is.EqualTo(newGenericPackage.PackageId));
         }
 
         private static MemoryStream CreateMemoryStream(string content)

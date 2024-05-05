@@ -1,136 +1,388 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NGitLab.Mock.Config;
 using NGitLab.Models;
 using NUnit.Framework;
 
-namespace NGitLab.Mock.Tests
+namespace NGitLab.Mock.Tests;
+
+public class ProjectsMockTests
 {
-    public class ProjectsMockTests
+    [Test]
+    public void WithProjectHelper_WhenPathNotSpecified_ItAutogeneratesPathFromName()
     {
-        [Test]
-        public void Test_projects_created_can_be_found()
+        // Arrange
+        var config = new GitLabConfig()
+            .WithUser("Foo", isDefault: true);
+
+        // Act
+        using var server = config
+            .WithProject("TEST", configure: p => p.@Namespace = "Foo")
+            .BuildServer();
+
+        // Assert
+        var client = server.CreateClient();
+        var project = client.Projects["Foo/Test"];
+
+        Assert.That(project.Path, Is.EqualTo("test"));
+    }
+
+    [Test]
+    public void Test_projects_created_can_be_found()
+    {
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProject("Test", @namespace: "testgroup", addDefaultUserAsMaintainer: true)
+            .BuildServer();
+
+        var client = server.CreateClient();
+        var project = client.Projects["testgroup/Test"];
+
+        Assert.That(project, Is.Not.Null);
+        Assert.That(project.Name, Is.EqualTo("Test"));
+        Assert.That(project.Namespace.FullPath, Is.EqualTo("testgroup"));
+    }
+
+    [Test]
+    public void Test_project_can_be_cloned_by_default()
+    {
+        using var tempDir = TemporaryDirectory.Create();
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProject("Test", clonePath: tempDir.FullPath)
+            .BuildServer();
+
+        Assert.That(Directory.Exists(tempDir.GetFullPath(".git")), Is.True);
+    }
+
+    [Test]
+    public void Test_project_with_submodules()
+    {
+        using var tempDir = TemporaryDirectory.Create();
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProject("ModuleA", configure: x => x.WithCommit(configure: c => c.WithFile("A.txt")))
+            .WithProject("ModuleB", configure: x => x.WithCommit(configure: c => c.WithFile("B.txt")))
+            .WithProject("Test", clonePath: tempDir.FullPath, configure: x =>
+                x.WithCommit("Init", configure: c
+                    => c.WithSubModule("ModuleA")
+                        .WithSubModule("ModuleB")))
+            .BuildServer();
+
+        Assert.That(Directory.Exists(tempDir.GetFullPath(".git")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleA/.git")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleA/A.txt")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleB/.git")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleB/B.txt")), Is.True);
+    }
+
+    [Test]
+    public void Test_project_with_nested_submodules()
+    {
+        using var tempDir = TemporaryDirectory.Create();
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProject("ModuleA", configure: x => x.WithCommit(configure: c => c.WithFile("A.txt")))
+            .WithProject("ModuleB", configure: x => x.WithCommit(configure: c
+                                                                     => c.WithFile("B.txt")
+                                                                         .WithSubModule("ModuleA")))
+            .WithProject("Test", clonePath: tempDir.FullPath, configure: x =>
+                x.WithCommit(configure: c
+                    => c.WithSubModule("ModuleB")))
+            .BuildServer();
+
+        Assert.That(Directory.Exists(tempDir.GetFullPath(".git")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleB/.git")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleB/B.txt")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleB/ModuleA/.git")), Is.True);
+        Assert.That(System.IO.File.Exists(tempDir.GetFullPath("ModuleB/ModuleA/A.txt")), Is.True);
+    }
+
+    [Test]
+    public void Test_projects_created_url_ends_with_namespace_and_name()
+    {
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProject("Test", @namespace: "testgroup", addDefaultUserAsMaintainer: true)
+            .BuildServer();
+
+        var client = server.CreateClient();
+        var project = client.Projects["testgroup/Test"];
+
+        Assert.That(project, Is.Not.Null);
+        Assert.That(project.SshUrl, Does.EndWith($"testgroup{Path.DirectorySeparatorChar}test"));
+        Assert.That(project.HttpUrl, Does.EndWith($"testgroup{Path.DirectorySeparatorChar}test"));
+        Assert.That(project.WebUrl, Does.EndWith("testgroup/test"));
+    }
+
+    [Test]
+    public void Test_get_languages()
+    {
+        using var server = new GitLabServer();
+        var user = server.Users.AddNew();
+        var project = user.Namespace.Projects.AddNew();
+
+        var client = server.CreateClient(user);
+        Assert.That(client.Projects.GetLanguages(project.Id.ToString(CultureInfo.InvariantCulture)), Is.Empty);
+
+        project.Repository.Commit(user, "dummy", new[] { File.CreateFromText("test.cs", "dummy"), File.CreateFromText("test.js", "dummy") });
+        var languages = client.Projects.GetLanguages(project.Id.ToString(CultureInfo.InvariantCulture));
+        Assert.That(languages, Has.Count.EqualTo(2));
+        Assert.That(languages["C#"], Is.EqualTo(0.5d));
+        Assert.That(languages["JavaScript"], Is.EqualTo(0.5d));
+    }
+
+    [Test]
+    public void Test_empty_repo()
+    {
+        using var server = new GitLabServer();
+        var user = server.Users.AddNew();
+        var project = user.Namespace.Projects.AddNew();
+
+        Assert.That(project.ToClientProject(user).EmptyRepo, Is.True);
+
+        project.Repository.Commit(user, "dummy");
+        Assert.That(project.ToClientProject(user).EmptyRepo, Is.False);
+    }
+
+    [Test]
+    public void Test_project_permissions_maintainer_with_project_access()
+    {
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProject("Test", @namespace: "testgroup", addDefaultUserAsMaintainer: true)
+            .BuildServer();
+
+        var client = server.CreateClient();
+        var project = client.Projects["testgroup/Test"];
+
+        project.Should().NotBeNull();
+        project.Permissions.GroupAccess.Should().BeNull();
+        project.Permissions.ProjectAccess.AccessLevel.Should().Be(AccessLevel.Maintainer);
+    }
+
+    [Test]
+    public void Test_project_permissions_with_no_access()
+    {
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProject("Test", @namespace: "testgroup")
+            .BuildServer();
+
+        var client = server.CreateClient();
+        var project = client.Projects["testgroup/Test"];
+
+        project.Should().NotBeNull();
+        project.Permissions.GroupAccess.Should().BeNull();
+        project.Permissions.ProjectAccess.Should().BeNull();
+    }
+
+    [Test]
+    public void Test_project_permissions_with_group_access()
+    {
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithGroup("testgroup", addDefaultUserAsMaintainer: true)
+            .WithProject("Test", @namespace: "testgroup")
+            .BuildServer();
+
+        var client = server.CreateClient();
+        var project = client.Projects["testgroup/Test"];
+
+        project.Should().NotBeNull();
+        project.Permissions.ProjectAccess.Should().BeNull();
+        project.Permissions.GroupAccess.AccessLevel.Should().Be(AccessLevel.Maintainer);
+    }
+
+    [Test]
+    public async Task CreateAsync_WhenMockCreatedWithSupportedOptions_TheyAreAvailableInModel()
+    {
+        // Arrange
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithGroupOfFullPath("my-group", name: "MyGroup", addDefaultUserAsMaintainer: true)
+            .BuildServer();
+
+        var projectClient = server.CreateClient().Projects;
+
+        var expected = new ProjectCreate()
         {
-            using var server = new GitLabConfig()
-                .WithUser("Test", isDefault: true)
-                .WithProject("Test", @namespace: "testgroup", addDefaultUserAsMaintainer: true)
-                .BuildServer();
+            Name = "MyProject",
+            Path = "my-project",
+            NamespaceId = "my-group",
+            Description = "Description",
+            DefaultBranch = "foo",
+            InitializeWithReadme = true,
+            Topics = new() { "t1", "t2" },
+            BuildTimeout = (int)TimeSpan.FromMinutes(15).TotalSeconds,
+        };
 
-            var client = server.CreateClient();
-            var project = client.Projects["testgroup/Test"];
+        // Act
+        var actual = await projectClient.CreateAsync(expected);
 
-            Assert.IsNotNull(project);
-            Assert.AreEqual("Test", project.Name);
-            Assert.AreEqual("testgroup", project.Namespace.FullPath);
-        }
+        // Assert
+        actual.Name.Should().Be(expected.Name);
+        actual.Path.Should().Be(expected.Path);
+        actual.Description.Should().Be(expected.Description);
+        actual.Namespace.FullPath.Should().Be(expected.NamespaceId);
+        actual.NameWithNamespace.Should().Be($"MyGroup / {expected.Name}");
+        actual.PathWithNamespace.Should().Be($"my-group/{expected.Path}");
+        actual.DefaultBranch.Should().Be(expected.DefaultBranch);
+        actual.Topics.Should().BeEquivalentTo(expected.Topics);
+        actual.BuildTimeout.Should().Be(expected.BuildTimeout);
+    }
 
-        [Test]
-        public void Test_project_can_be_cloned_by_default()
+    [Test]
+    public async Task CreateAsync_WhenInitializeWithReadmeIsFalse_ItIgnoresDefaultBranch()
+    {
+        // Arrange
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .BuildServer();
+
+        var projectClient = server.CreateClient().Projects;
+
+        var expected = new ProjectCreate()
         {
-            using var tempDir = TemporaryDirectory.Create();
-            using var server = new GitLabConfig()
-                .WithUser("Test", isDefault: true)
-                .WithProject("Test", clonePath: tempDir.FullPath)
-                .BuildServer();
+            Name = "MyProject",
+            DefaultBranch = "foo",
+            InitializeWithReadme = false,
+        };
 
-            Assert.IsTrue(Directory.Exists(tempDir.GetFullPath(".git")));
-        }
+        // Act
+        var actual = await projectClient.CreateAsync(expected);
 
-        [Test]
-        public void Test_projects_created_url_ends_with_namespace_and_name()
+        // Assert
+        actual.Name.Should().Be(expected.Name);
+        actual.DefaultBranch.Should().NotBe(expected.DefaultBranch);
+    }
+
+    [Test]
+    public void CreateAsync_WhenProjectPathAlreadyExists_ItThrows()
+    {
+        // Arrange
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProjectOfFullPath("Test/duplicate")
+            .BuildServer();
+
+        var projectClient = server.CreateClient().Projects;
+
+        // Act
+        var ex = Assert.CatchAsync<GitLabException>(() =>
+            projectClient.CreateAsync(new()
+            {
+                Path = "DUPLICATE", // GitLab path is case-INsensitive
+                Name = "project2",
+            }));
+
+        // Assert
+        Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(ex.ErrorMessage, Contains.Substring("has already been taken"));
+    }
+
+    [Test]
+    public void CreateAsync_WhenProjectNameAlreadyExists_ItThrows()
+    {
+        // Arrange
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProjectOfFullPath("Test/duplicate")
+            .BuildServer();
+
+        var projectClient = server.CreateClient().Projects;
+
+        // Act
+        var ex = Assert.ThrowsAsync<GitLabException>(() =>
+            projectClient.CreateAsync(new()
+            {
+                Path = "project2",
+                Name = "duplicate", // GitLab name is case-Sensitive
+            }));
+
+        // Assert
+        Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(ex.ErrorMessage, Contains.Substring("has already been taken"));
+    }
+
+    [Test]
+    public async Task CreateAsync_WhenProjectNameOfDifferentCaseAlreadyExists_ItWorks()
+    {
+        // Arrange
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProjectOfFullPath("Test/not_duplicate")
+            .BuildServer();
+
+        var projectClient = server.CreateClient().Projects;
+
+        // Act
+        var newProject = await projectClient.CreateAsync(new()
         {
-            using var server = new GitLabConfig()
-                .WithUser("Test", isDefault: true)
-                .WithProject("Test", @namespace: "testgroup", addDefaultUserAsMaintainer: true)
-                .BuildServer();
+            Path = "project2",
+            Name = "NOT_DUPLICATE", // GitLab name is case-Sensitive
+        });
 
-            var client = server.CreateClient();
-            var project = client.Projects["testgroup/Test"];
+        // Assert
+        Assert.That(newProject.Name, Is.EqualTo("NOT_DUPLICATE"));
+    }
 
-            Assert.IsNotNull(project);
-            StringAssert.EndsWith($"testgroup{Path.DirectorySeparatorChar}test", project.SshUrl);
-            StringAssert.EndsWith($"testgroup{Path.DirectorySeparatorChar}test", project.HttpUrl);
-            StringAssert.EndsWith("testgroup/test", project.WebUrl);
-        }
+    [Test]
+    public void UpdateAsync_WhenProjectNotFound_ItThrows()
+    {
+        // Arrange
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .BuildServer();
 
-        [Test]
-        public void Test_get_languages()
-        {
-            using var server = new GitLabServer();
-            var user = server.Users.AddNew();
-            var project = user.Namespace.Projects.AddNew();
+        var projectClient = server.CreateClient().Projects;
 
-            var client = server.CreateClient(user);
-            Assert.IsEmpty(client.Projects.GetLanguages(project.Id.ToString(CultureInfo.InvariantCulture)));
+        // Act
+        var ex = Assert.CatchAsync<GitLabException>(() =>
+            projectClient.UpdateAsync(int.MaxValue, new()
+            {
+                Visibility = VisibilityLevel.Private,
+            }));
 
-            project.Repository.Commit(user, "dummy", new[] { File.CreateFromText("test.cs", "dummy"), File.CreateFromText("test.js", "dummy") });
-            var languages = client.Projects.GetLanguages(project.Id.ToString(CultureInfo.InvariantCulture));
-            Assert.AreEqual(2, languages.Count);
-            Assert.AreEqual(0.5d, languages["C#"]);
-            Assert.AreEqual(0.5d, languages["JavaScript"]);
-        }
+        // Assert
+        Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
 
-        [Test]
-        public void Test_empty_repo()
-        {
-            using var server = new GitLabServer();
-            var user = server.Users.AddNew();
-            var project = user.Namespace.Projects.AddNew();
+    [Test]
+    public async Task DeleteAsync_WhenProjectExists_ItIsDeleted()
+    {
+        var projectFullPath = $"Test/{nameof(DeleteAsync_WhenProjectExists_ItIsDeleted)}";
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .WithProjectOfFullPath(projectFullPath)
+            .BuildServer();
 
-            Assert.IsTrue(project.ToClientProject(user).EmptyRepo);
+        var projectClient = server.CreateClient().Projects;
 
-            project.Repository.Commit(user, "dummy");
-            Assert.IsFalse(project.ToClientProject(user).EmptyRepo);
-        }
+        // Act
+        await projectClient.DeleteAsync(projectFullPath);
 
-        [Test]
-        public void Test_project_permissions_maintainer_with_project_access()
-        {
-            using var server = new GitLabConfig()
-                .WithUser("Test", isDefault: true)
-                .WithProject("Test", @namespace: "testgroup", addDefaultUserAsMaintainer: true)
-                .BuildServer();
+        // Assert
+        Assert.CatchAsync<GitLabException>(() => projectClient.GetAsync(projectFullPath));
+    }
 
-            var client = server.CreateClient();
-            var project = client.Projects["testgroup/Test"];
+    [Test]
+    public void DeleteAsync_WhenProjectNotFound_ItThrows()
+    {
+        using var server = new GitLabConfig()
+            .WithUser("Test", isDefault: true)
+            .BuildServer();
 
-            project.Should().NotBeNull();
-            project.Permissions.GroupAccess.Should().BeNull();
-            project.Permissions.ProjectAccess.AccessLevel.Should().Be(AccessLevel.Maintainer);
-        }
+        var projectClient = server.CreateClient().Projects;
 
-        [Test]
-        public void Test_project_permissions_with_no_access()
-        {
-            using var server = new GitLabConfig()
-                .WithUser("Test", isDefault: true)
-                .WithProject("Test", @namespace: "testgroup")
-                .BuildServer();
+        // Act
+        var ex = Assert.CatchAsync<GitLabException>(() => projectClient.DeleteAsync(int.MaxValue));
 
-            var client = server.CreateClient();
-            var project = client.Projects["testgroup/Test"];
-
-            project.Should().NotBeNull();
-            project.Permissions.GroupAccess.Should().BeNull();
-            project.Permissions.ProjectAccess.Should().BeNull();
-        }
-
-        [Test]
-        public void Test_project_permissions_with_group_access()
-        {
-            using var server = new GitLabConfig()
-                .WithUser("Test", isDefault: true)
-                .WithGroup("testgroup", addDefaultUserAsMaintainer: true)
-                .WithProject("Test", @namespace: "testgroup")
-                .BuildServer();
-
-            var client = server.CreateClient();
-            var project = client.Projects["testgroup/Test"];
-
-            project.Should().NotBeNull();
-            project.Permissions.ProjectAccess.Should().BeNull();
-            project.Permissions.GroupAccess.AccessLevel.Should().Be(AccessLevel.Maintainer);
-        }
+        // Assert
+        Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
 }

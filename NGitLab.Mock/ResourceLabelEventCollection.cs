@@ -1,44 +1,101 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NGitLab.Models;
 
-namespace NGitLab.Mock
+namespace NGitLab.Mock;
+
+public sealed class ResourceLabelEventCollection : Collection<ResourceLabelEvent>
 {
-    public sealed class ResourceLabelEventCollection : Collection<ResourceLabelEvent>
+    public ResourceLabelEventCollection(GitLabObject container)
+        : base(container)
     {
-        public ResourceLabelEventCollection(GitLabObject container)
-            : base(container)
+    }
+
+    public override void Add(ResourceLabelEvent item)
+    {
+        if (item is null)
+            throw new ArgumentNullException(nameof(item));
+
+        if (item.Id == default)
         {
+            item.Id = GetNewId();
         }
 
-        public override void Add(ResourceLabelEvent item)
-        {
-            if (item is null)
-                throw new ArgumentNullException(nameof(item));
+        base.Add(item);
+    }
 
-            if (item.Id == default)
+    internal IEnumerable<ResourceLabelEvent> Get(int? resourceId)
+    {
+        var resourceLabelEvents = this.AsQueryable();
+
+        if (resourceId.HasValue)
+        {
+            resourceLabelEvents = resourceLabelEvents.Where(rle => rle.ResourceId == resourceId);
+        }
+
+        return resourceLabelEvents;
+    }
+
+    private int GetNewId()
+    {
+        return this.Select(rle => rle.Id).DefaultIfEmpty().Max() + 1;
+    }
+
+    internal void CreateResourceLabelEvents(User currentUser, string[] previousLabels, string[] newLabels, int resourceId, string resourceType)
+    {
+        foreach (var label in previousLabels)
+        {
+            if (!newLabels.Any(l => string.Equals(l, label, StringComparison.OrdinalIgnoreCase)))
             {
-                item.Id = GetNewId();
+                Add(new ResourceLabelEvent()
+                {
+                    Action = ResourceLabelEventAction.Remove,
+                    Label = new Label() { Name = label },
+                    ResourceId = resourceId,
+                    CreatedAt = DateTime.UtcNow,
+                    Id = Server.GetNewResourceLabelEventId(),
+                    User = new Author()
+                    {
+                        Id = currentUser.Id,
+                        Email = currentUser.Email,
+                        AvatarUrl = currentUser.AvatarUrl,
+                        Name = currentUser.Name,
+                        State = currentUser.State.ToString(),
+                        Username = currentUser.UserName,
+                        CreatedAt = currentUser.CreatedAt,
+                        WebUrl = currentUser.WebUrl,
+                    },
+                    ResourceType = resourceType,
+                });
             }
-
-            base.Add(item);
         }
 
-        internal IEnumerable<ResourceLabelEvent> Get(int? resourceId)
+        foreach (var label in newLabels)
         {
-            var resourceLabelEvents = this.AsQueryable();
-
-            if (resourceId.HasValue)
+            if (!previousLabels.Any(l => string.Equals(l, label, StringComparison.OrdinalIgnoreCase)))
             {
-                resourceLabelEvents = resourceLabelEvents.Where(rle => rle.ResourceId == resourceId);
+                Add(new ResourceLabelEvent()
+                {
+                    Action = ResourceLabelEventAction.Add,
+                    Label = new Label() { Name = label },
+                    ResourceId = resourceId,
+                    CreatedAt = DateTime.UtcNow,
+                    Id = Server.GetNewResourceLabelEventId(),
+                    User = new Author()
+                    {
+                        Id = currentUser.Id,
+                        Email = currentUser.Email,
+                        AvatarUrl = currentUser.AvatarUrl,
+                        Name = currentUser.Name,
+                        State = currentUser.State.ToString(),
+                        Username = currentUser.UserName,
+                        CreatedAt = currentUser.CreatedAt,
+                        WebUrl = currentUser.WebUrl,
+                    },
+                    ResourceType = resourceType,
+                });
             }
-
-            return resourceLabelEvents;
-        }
-
-        private int GetNewId()
-        {
-            return this.Select(rle => rle.Id).DefaultIfEmpty().Max() + 1;
         }
     }
 }

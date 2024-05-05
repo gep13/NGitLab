@@ -3,81 +3,89 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace NGitLab.Models
+namespace NGitLab.Models;
+
+public class ProjectCreate
 {
-    public class ProjectCreate
-    {
-        [Required]
-        [JsonPropertyName("name")]
-        public string Name;
+    [Required]
+    [JsonPropertyName("name")]
+    public string Name;
 
-        [JsonPropertyName("namespace_id")]
-        public string NamespaceId;
+    [JsonPropertyName("namespace_id")]
+    public string NamespaceId;
 
-        [JsonPropertyName("default_branch")]
-        public string DefaultBranch;
+    /// <summary>
+    /// The default branch name. Requires <see cref="InitializeWithReadme"/> to be true.
+    /// </summary>
+    [JsonPropertyName("default_branch")]
+    public string DefaultBranch;
 
-        [JsonPropertyName("description")]
-        public string Description;
+    [JsonPropertyName("initialize_with_readme")]
+    public bool InitializeWithReadme;
 
-        [JsonPropertyName("path")]
-        public string Path;
+    [JsonPropertyName("description")]
+    public string Description;
 
-        [JsonPropertyName("issues_enabled")]
-        [Obsolete("Deprecated by GitLab. Use IssuesAccessLevel instead")]
-        public bool IssuesEnabled;
+    [JsonPropertyName("path")]
+    public string Path;
 
-        [JsonPropertyName("issues_access_level")]
-        public string IssuesAccessLevel;
+    [JsonPropertyName("issues_enabled")]
+    [Obsolete("Deprecated by GitLab. Use IssuesAccessLevel instead")]
+    public bool IssuesEnabled;
 
-        [Obsolete("Deprecated by GitLab.")]
-        [JsonIgnore]
-        public bool WallEnabled;
+    [JsonPropertyName("issues_access_level")]
+    public string IssuesAccessLevel;
 
-        [JsonPropertyName("merge_pipelines_enabled")]
-        public bool MergePipelinesEnabled;
+    [Obsolete("Deprecated by GitLab.")]
+    [JsonIgnore]
+    public bool WallEnabled;
 
-        [JsonPropertyName("merge_requests_enabled")]
-        [Obsolete("Deprecated by GitLab. Use MergeRequestsAccessLevel instead")]
-        public bool MergeRequestsEnabled;
+    [JsonPropertyName("merge_pipelines_enabled")]
+    public bool MergePipelinesEnabled;
 
-        [JsonPropertyName("merge_requests_access_level")]
-        public string MergeRequestsAccessLevel;
+    [JsonPropertyName("merge_requests_enabled")]
+    [Obsolete("Deprecated by GitLab. Use MergeRequestsAccessLevel instead")]
+    public bool MergeRequestsEnabled;
 
-        [JsonPropertyName("merge_trains_enabled")]
-        public bool MergeTrainsEnabled;
+    [JsonPropertyName("merge_requests_access_level")]
+    public string MergeRequestsAccessLevel;
 
-        [JsonPropertyName("snippets_enabled")]
-        [Obsolete("Deprecated by GitLab. Use SnippetsAccessLevel instead")]
-        public bool SnippetsEnabled;
+    [JsonPropertyName("merge_trains_enabled")]
+    public bool MergeTrainsEnabled;
 
-        [JsonPropertyName("snippets_access_level")]
-        public string SnippetsAccessLevel;
+    [JsonPropertyName("snippets_enabled")]
+    [Obsolete("Deprecated by GitLab. Use SnippetsAccessLevel instead")]
+    public bool SnippetsEnabled;
 
-        [JsonPropertyName("wiki_enabled")]
-        [Obsolete("Deprecated by GitLab. Use WikiAccessLevel instead")]
-        public bool WikiEnabled;
+    [JsonPropertyName("snippets_access_level")]
+    public string SnippetsAccessLevel;
 
-        [JsonPropertyName("wiki_access_level")]
-        public string WikiAccessLevel;
+    [JsonPropertyName("wiki_enabled")]
+    [Obsolete("Deprecated by GitLab. Use WikiAccessLevel instead")]
+    public bool WikiEnabled;
 
-        [JsonPropertyName("import_url")]
-        public string ImportUrl = string.Empty;
+    [JsonPropertyName("wiki_access_level")]
+    public string WikiAccessLevel;
 
-        [JsonPropertyName("visibility")]
-        public VisibilityLevel VisibilityLevel;
+    [JsonPropertyName("import_url")]
+    public string ImportUrl = string.Empty;
 
-        [JsonPropertyName("tag_list")]
-        [Obsolete("Deprecated by GitLab. Use Topics instead")]
-        public List<string> Tags;
+    [JsonPropertyName("visibility")]
+    public VisibilityLevel VisibilityLevel;
 
-        [JsonPropertyName("topics")]
-        public List<string> Topics { get; set; }
+    [JsonPropertyName("tag_list")]
+    [Obsolete("Deprecated by GitLab. Use Topics instead")]
+    public List<string> Tags;
 
-        [JsonPropertyName("build_timeout")]
-        public int? BuildTimeout;
+    [JsonPropertyName("topics")]
+    public List<string> Topics { get; set; }
 
-        [JsonPropertyName("squash_option")]
-        public SquashOption? SquashOption { get; set; }
-    }
+    /// <summary>
+    /// The maximum amount of time, in seconds, that a job can run.
+    /// </summary>
+    [JsonPropertyName("build_timeout")]
+    public int? BuildTimeout;
+
+    [JsonPropertyName("squash_option")]
+    public SquashOption? SquashOption { get; set; }
 }

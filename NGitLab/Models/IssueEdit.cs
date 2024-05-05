@@ -4,44 +4,46 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using NGitLab.Impl.Json;
 
-namespace NGitLab.Models
+namespace NGitLab.Models;
+
+public class IssueEdit
 {
-    public class IssueEdit
-    {
-        [JsonIgnore]
-        public int ProjectId { get => Id; set => Id = value; }
+    [JsonIgnore]
+    public int ProjectId { get => Id; set => Id = value; }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [JsonIgnore]
-        public int Id;
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [JsonIgnore]
+    public int Id;
 
-        [Required]
-        [JsonPropertyName("issue_id")]
-        public int IssueId;
+    [Required]
+    [JsonPropertyName("issue_id")]
+    public int IssueId;
 
-        [JsonPropertyName("title")]
-        public string Title;
+    [JsonPropertyName("title")]
+    public string Title;
 
-        [JsonPropertyName("description")]
-        public string Description;
+    [JsonPropertyName("description")]
+    public string Description;
 
-        [JsonPropertyName("assignee_id")]
-        public int? AssigneeId;
+    [JsonPropertyName("assignee_id")]
+    public int? AssigneeId;
 
-        [JsonPropertyName("milestone_id")]
-        public int? MilestoneId;
+    [JsonPropertyName("assignee_ids")]
+    public int[] AssigneeIds;
 
-        [JsonPropertyName("labels")]
-        public string Labels;
+    [JsonPropertyName("milestone_id")]
+    public int? MilestoneId;
 
-        [JsonPropertyName("state_event")]
-        public string State;
+    [JsonPropertyName("labels")]
+    public string Labels;
 
-        [JsonPropertyName("due_date")]
-        [JsonConverter(typeof(DateOnlyConverter))]
-        public DateTime? DueDate;
+    [JsonPropertyName("state_event")]
+    public string State;
 
-        [JsonPropertyName("epic_id")]
-        public int? EpicId;
-    }
+    [JsonPropertyName("due_date")]
+    [JsonConverter(typeof(DateOnlyConverter))]
+    public DateTime? DueDate;
+
+    [JsonPropertyName("epic_id")]
+    public int? EpicId;
 }

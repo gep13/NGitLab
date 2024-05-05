@@ -3,28 +3,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using NGitLab.Models;
 
-namespace NGitLab
+namespace NGitLab;
+
+public interface IJobClient
 {
-    public interface IJobClient
-    {
-        IEnumerable<Job> GetJobs(JobScopeMask scope);
+    IEnumerable<Job> GetJobs(JobScopeMask scope);
 
-        IEnumerable<Job> GetJobs(JobQuery query);
+    IEnumerable<Job> GetJobs(JobQuery query);
 
-        GitLabCollectionResponse<Job> GetJobsAsync(JobQuery query);
+    GitLabCollectionResponse<Job> GetJobsAsync(JobQuery query);
 
-        Job RunAction(int jobId, JobAction action);
+    Job RunAction(int jobId, JobAction action);
 
-        Task<Job> RunActionAsync(int jobId, JobAction action, CancellationToken cancellationToken = default);
+    Task<Job> RunActionAsync(int jobId, JobAction action, CancellationToken cancellationToken = default);
 
-        Job Get(int jobId);
+    Job Get(int jobId);
 
-        Task<Job> GetAsync(int jobId, CancellationToken cancellationToken = default);
+    Task<Job> GetAsync(int jobId, CancellationToken cancellationToken = default);
 
-        byte[] GetJobArtifacts(int jobId);
+    byte[] GetJobArtifacts(int jobId);
 
-        string GetTrace(int jobId);
+    byte[] GetJobArtifact(int jobId, string path);
 
-        Task<string> GetTraceAsync(int jobId, CancellationToken cancellationToken = default);
-    }
+    byte[] GetJobArtifact(JobArtifactQuery query);
+
+    string GetTrace(int jobId);
+
+    Task<string> GetTraceAsync(int jobId, CancellationToken cancellationToken = default);
 }

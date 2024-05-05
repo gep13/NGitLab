@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <!-- Assembly Info -->
     <Company>Ubisoft</Company>
@@ -8,7 +8,7 @@
     <Authors>$(Company), NGitLab contributors</Authors>
 
     <!-- Compile Options -->
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>11.0</LangVersion>
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
     <TreatWarningsAsErrors Condition="'$(Configuration)' != 'Debug'">true</TreatWarningsAsErrors>
@@ -27,7 +27,7 @@
     <SourceRoot Include="$(MSBuildThisFileDirectory)/" />
 
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)/BannedSymbols.txt" Link="Properties/BannedSymbols.txt" />
-    <PackageReference Include="MinVer" PrivateAssets="All" Version="4.3.0" />
+    <PackageReference Include="MinVer" PrivateAssets="All" Version="5.0.0" />
 
     <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
@@ -37,17 +37,17 @@
 
   <!-- Analyzers (Roslyn, Meziantou, StyleCop, ...) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.4">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="Meziantou.Analyzer" Version="2.0.84">
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.146">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

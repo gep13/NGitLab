@@ -1,22 +1,22 @@
 ﻿using System;
 using NGitLab.Models;
 
-namespace NGitLab.Mock.Clients
+namespace NGitLab.Mock.Clients;
+
+internal sealed class GroupSearchClient : ClientBase, ISearchClient
 {
-    internal sealed class GroupSearchClient : ISearchClient
+    private readonly ClientContext _context;
+    private readonly int _groupId;
+
+    public GroupSearchClient(ClientContext context, GroupId groupId)
+        : base(context)
     {
-        private readonly ClientContext _context;
-        private readonly int _groupId;
+        _context = context;
+        _groupId = Server.AllGroups.FindGroup(groupId.ValueAsUriParameter()).Id;
+    }
 
-        public GroupSearchClient(ClientContext context, int groupId)
-        {
-            _context = context;
-            _groupId = groupId;
-        }
-
-        public GitLabCollectionResponse<SearchBlob> GetBlobsAsync(SearchQuery query)
-        {
-            throw new NotImplementedException();
-        }
+    public GitLabCollectionResponse<SearchBlob> GetBlobsAsync(SearchQuery query)
+    {
+        throw new NotImplementedException();
     }
 }
