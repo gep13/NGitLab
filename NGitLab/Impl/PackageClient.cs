@@ -36,7 +36,7 @@ namespace NGitLab.Impl
             return _api.Get().GetAllAsync<PackageSearchResult>(url);
         }
 
-        public Task<PackageSearchResult> GetByIdAsync(int projectId, int packageId, CancellationToken cancellationToken = default)
+        public Task<PackageSearchResult> GetByIdAsync(int projectId, long packageId, CancellationToken cancellationToken = default)
         {
             return _api.Get().ToAsync<PackageSearchResult>(string.Format(CultureInfo.InvariantCulture, GetPackageUrl, projectId, packageId), cancellationToken);
         }

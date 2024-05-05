@@ -29,6 +29,6 @@ namespace NGitLab
         /// <param name="packageId">The package id that is being selected.</param>
         /// <param name="cancellationToken">The cancellation token used to halt the request.</param>
         /// <returns></returns>
-        Task<PackageSearchResult> GetByIdAsync(int projectId, int packageId, CancellationToken cancellationToken = default);
+        Task<PackageSearchResult> GetByIdAsync(int projectId, long packageId, CancellationToken cancellationToken = default);
     }
 }

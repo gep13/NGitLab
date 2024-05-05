@@ -22,7 +22,7 @@ namespace NGitLab.Mock.Clients
             throw new System.NotImplementedException();
         }
 
-        public Task<PackageSearchResult> GetByIdAsync(int projectId, int packageId, CancellationToken cancellationToken = default)
+        public Task<PackageSearchResult> GetByIdAsync(int projectId, long packageId, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }

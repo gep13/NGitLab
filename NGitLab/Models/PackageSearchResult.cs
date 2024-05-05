@@ -7,7 +7,7 @@ namespace NGitLab.Models
     public class PackageSearchResult
     {
         [JsonPropertyName("id")]
-        public int PackageId { get; set; }
+        public long PackageId { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
