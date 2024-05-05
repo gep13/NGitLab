@@ -22,7 +22,7 @@ namespace NGitLab.Impl
 
         public Task<Package> PublishGenericPackageAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
         {
-            var formData = new FileContent(packagePublish.PackageStream);
+            var formData = new FileContent(packagePublish.FileStream);
 
             var url = string.Format(CultureInfo.InvariantCulture, PublishPackageUrl,
                 projectId,

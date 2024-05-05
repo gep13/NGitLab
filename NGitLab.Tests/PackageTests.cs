@@ -25,8 +25,7 @@ namespace NGitLab.Tests
                 FileName = "README.md",
                 PackageName = "Packages",
                 PackageVersion = "1.0.0",
-                Status = "default",
-                PackageStream = contentStream,
+                FileStream = contentStream,
             };
 
             var newGenericPackage = await packagesClient.PublishGenericPackageAsync(project.Id, packagePublish);
