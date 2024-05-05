@@ -2,8 +2,6 @@ namespace NGitLab.Models
 {
     public class PackageQuery
     {
-        public long PackageId { get; set; }
-
         public PackageOrderBy OrderBy { get; set; }
 
         public PackageSort Sort { get; set; }
