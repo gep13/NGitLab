@@ -7,10 +7,10 @@ namespace NGitLab.Models
     public class Package
     {
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [JsonPropertyName("package_id")]
-        public int PackageId { get; set; }
+        public long PackageId { get; set; }
 
         [JsonPropertyName("created_at")]
         [JsonConverter(typeof(DateOnlyConverter))]
@@ -21,19 +21,19 @@ namespace NGitLab.Models
         public DateTime? UpdatedAt { get; set; }
 
         [JsonPropertyName("size")]
-        public int Size { get; set; }
+        public long Size { get; set; }
 
         [JsonPropertyName("file_store")]
         public int FileStore { get; set; }
 
         [JsonPropertyName("file_md5")]
-        public string FileMD5 { get; set; }
+        public string FileMd5 { get; set; }
 
         [JsonPropertyName("file_sha1")]
-        public string FileSHA1 { get; set; }
+        public string FileSha1 { get; set; }
 
         [JsonPropertyName("file_sha256")]
-        public string FileSHA256 { get; set; }
+        public string FileSha256 { get; set; }
 
         [JsonPropertyName("file_name")]
         public string FileName { get; set; }

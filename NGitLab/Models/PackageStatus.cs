@@ -1,11 +1,18 @@
+using System.Runtime.Serialization;
+
 namespace NGitLab.Models
 {
     public enum PackageStatus
     {
-        @default,
-        hidden,
-        processing,
-        error,
-        pending_destruction,
+        [EnumMember(Value = "default")]
+        Default,
+        [EnumMember(Value = "hidden")]
+        Hidden,
+        [EnumMember(Value = "processing")]
+        Processing,
+        [EnumMember(Value = "error")]
+        Error,
+        [EnumMember(Value = "pending_destruction")]
+        PendingDestruction,
     }
 }

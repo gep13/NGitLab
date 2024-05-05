@@ -1,13 +1,17 @@
 ﻿using NGitLab.Models;
 
-namespace NGitLab
+namespace NGitLab;
+
+public interface IMergeRequestApprovalClient
 {
-    public interface IMergeRequestApprovalClient
-    {
-        MergeRequestApprovals Approvals { get; }
+    MergeRequestApprovals Approvals { get; }
 
-        void ChangeApprovers(MergeRequestApproversChange approversChange);
+    void ChangeApprovers(MergeRequestApproversChange approversChange);
 
-        MergeRequestApprovals ApproveMergeRequest(MergeRequestApproveRequest request = null);
-    }
+    MergeRequestApprovals ApproveMergeRequest(MergeRequestApproveRequest request = null);
+
+    /// <summary>
+    /// Available only for bot users based on project or group tokens.
+    /// </summary>
+    void ResetApprovals();
 }

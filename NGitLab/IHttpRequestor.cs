@@ -3,27 +3,35 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NGitLab.Models;
 
-namespace NGitLab
+namespace NGitLab;
+
+public interface IHttpRequestor
 {
-    public interface IHttpRequestor
-    {
-        IEnumerable<T> GetAll<T>(string tailUrl);
+    IEnumerable<T> GetAll<T>(string tailUrl);
 
-        GitLabCollectionResponse<T> GetAllAsync<T>(string tailUrl);
+    GitLabCollectionResponse<T> GetAllAsync<T>(string tailUrl);
 
-        void Stream(string tailAPIUrl, Action<Stream> parser);
+    PagedResponse<T> Page<T>(string tailAPIUrl);
 
-        Task StreamAsync(string tailAPIUrl, Func<Stream, Task> parser, CancellationToken cancellationToken);
+    Task<PagedResponse<T>> PageAsync<T>(string tailAPIUrl, CancellationToken cancellationToken);
 
-        T To<T>(string tailAPIUrl);
+    void Stream(string tailAPIUrl, Action<Stream> parser);
 
-        Task<T> ToAsync<T>(string tailAPIUrl, CancellationToken cancellationToken);
+    void StreamAndHeaders(string tailAPIUrl, Action<Stream, IReadOnlyDictionary<string, IEnumerable<string>>> parser);
 
-        void Execute(string tailAPIUrl);
+    Task StreamAsync(string tailAPIUrl, Func<Stream, Task> parser, CancellationToken cancellationToken);
 
-        Task ExecuteAsync(string tailAPIUrl, CancellationToken cancellationToken);
+    Task StreamAndHeadersAsync(string tailAPIUrl, Func<Stream, IReadOnlyDictionary<string, IEnumerable<string>>, Task> parser, CancellationToken cancellationToken);
 
-        IHttpRequestor With(object data);
-    }
+    T To<T>(string tailAPIUrl);
+
+    Task<T> ToAsync<T>(string tailAPIUrl, CancellationToken cancellationToken);
+
+    void Execute(string tailAPIUrl);
+
+    Task ExecuteAsync(string tailAPIUrl, CancellationToken cancellationToken);
+
+    IHttpRequestor With(object data);
 }

@@ -4,41 +4,43 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using NGitLab.Impl.Json;
 
-namespace NGitLab.Models
+namespace NGitLab.Models;
+
+public class IssueCreate
 {
-    public class IssueCreate
-    {
-        [JsonIgnore]
-        public int ProjectId { get => Id; set => Id = value; }
+    [JsonIgnore]
+    public int ProjectId { get => Id; set => Id = value; }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [JsonIgnore]
-        public int Id;
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [JsonIgnore]
+    public int Id;
 
-        [Required]
-        [JsonPropertyName("title")]
-        public string Title;
+    [Required]
+    [JsonPropertyName("title")]
+    public string Title;
 
-        [JsonPropertyName("description")]
-        public string Description;
+    [JsonPropertyName("description")]
+    public string Description;
 
-        [JsonPropertyName("assignee_id")]
-        public int? AssigneeId;
+    [JsonPropertyName("assignee_id")]
+    public int? AssigneeId;
 
-        [JsonPropertyName("milestone_id")]
-        public int? MileStoneId;
+    [JsonPropertyName("assignee_ids")]
+    public int[] AssigneeIds;
 
-        [JsonPropertyName("labels")]
-        public string Labels;
+    [JsonPropertyName("milestone_id")]
+    public int? MileStoneId;
 
-        [JsonPropertyName("confidential")]
-        public bool Confidential;
+    [JsonPropertyName("labels")]
+    public string Labels;
 
-        [JsonPropertyName("due_date")]
-        [JsonConverter(typeof(DateOnlyConverter))]
-        public DateTime? DueDate;
+    [JsonPropertyName("confidential")]
+    public bool Confidential;
 
-        [JsonPropertyName("epic_id")]
-        public int? EpicId;
-    }
+    [JsonPropertyName("due_date")]
+    [JsonConverter(typeof(DateOnlyConverter))]
+    public DateTime? DueDate;
+
+    [JsonPropertyName("epic_id")]
+    public int? EpicId;
 }

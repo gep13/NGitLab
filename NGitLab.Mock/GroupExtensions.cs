@@ -1,34 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 
-namespace NGitLab.Mock
+namespace NGitLab.Mock;
+
+public static class GroupExtensions
 {
-    public static class GroupExtensions
+    public static Group FindById(this IEnumerable<Group> groups, long id)
     {
-        public static Group FindGroupById(this IEnumerable<Group> groups, int id)
-        {
-            foreach (var group in groups)
-            {
-                if (group.Id == id)
-                    return group;
-            }
+        return groups.FirstOrDefault(group => group.Id == id);
+    }
 
-            return null;
-        }
+    public static Group FindByNamespacedPath(this IEnumerable<Group> groups, string pathWithNamespace)
+    {
+        return groups.FirstOrDefault(group => string.Equals(group.PathWithNameSpace, pathWithNamespace, StringComparison.Ordinal));
+    }
 
-        public static Group FindGroup(this IEnumerable<Group> groups, string idOrPathWithNamespace)
-        {
-            foreach (var group in groups)
-            {
-                if (string.Equals(group.PathWithNameSpace, idOrPathWithNamespace, StringComparison.Ordinal))
-                    return group;
-
-                if (string.Equals(group.Id.ToString(CultureInfo.InvariantCulture), idOrPathWithNamespace, StringComparison.Ordinal))
-                    return group;
-            }
-
-            return null;
-        }
+    public static Group FindGroup(this IEnumerable<Group> groups, string idOrPathWithNamespace)
+    {
+        return long.TryParse(idOrPathWithNamespace, out var id)
+            ? FindById(groups, id)
+            : FindByNamespacedPath(groups, idOrPathWithNamespace);
     }
 }

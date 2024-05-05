@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +8,7 @@ namespace NGitLab.Impl
 {
     public class PackageClient : IPackageClient
     {
-        private const string PublishPackageUrl = "/projects/{0}/packages/generic/{1}/{2}/{3}?status={4}&select=package_file";
+        private const string PublishPackageUrl = "/projects/{0}/packages/generic/{1}/{2}/{3}";
         private const string GetPackagesUrl = "/projects/{0}/packages";
         private const string GetPackageUrl = "/projects/{0}/packages/{1}";
 
@@ -20,30 +19,41 @@ namespace NGitLab.Impl
             _api = api;
         }
 
-        public Task<Package> PublishAsync(int projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
+        public Task<Package> PublishGenericPackageAsync(ProjectId projectId, PackagePublish packagePublish, CancellationToken cancellationToken = default)
         {
-            var formData = new FileContent(packagePublish.PackageStream);
+            var formData = new FileContent(packagePublish.FileStream);
 
-            return _api.Put().With(formData).ToAsync<Package>(string.Format(CultureInfo.InvariantCulture,
-                PublishPackageUrl, projectId, Uri.EscapeDataString(packagePublish.PackageName),
-                Uri.EscapeDataString(packagePublish.PackageVersion), Uri.EscapeDataString(packagePublish.FileName),
-                Uri.EscapeDataString(packagePublish.Status)), cancellationToken);
+            var url = string.Format(CultureInfo.InvariantCulture, PublishPackageUrl,
+                projectId.ValueAsUriParameter(),
+                Uri.EscapeDataString(packagePublish.PackageName),
+                Uri.EscapeDataString(packagePublish.PackageVersion),
+                Uri.EscapeDataString(packagePublish.FileName));
+
+            if (packagePublish.Status.HasValue)
+            {
+                url = Utils.AddParameter(url, "status", packagePublish.Status.Value);
+            }
+
+            // Make GitLab return information about the uploaded file (by default, the respone is empty)
+            url = Utils.AddParameter(url, "select", "package_file");
+
+            return _api.Put().With(formData).ToAsync<Package>(url, cancellationToken);
         }
 
-        public IEnumerable<PackageSearchResult> Get(int projectId, PackageQuery packageQuery)
+        public GitLabCollectionResponse<PackageSearchResult> Get(ProjectId projectId, PackageQuery packageQuery)
         {
             var url = CreateGetUrl(projectId, packageQuery);
             return _api.Get().GetAllAsync<PackageSearchResult>(url);
         }
 
-        public Task<PackageSearchResult> GetByIdAsync(int projectId, int packageId, CancellationToken cancellationToken = default)
+        public Task<PackageSearchResult> GetByIdAsync(ProjectId projectId, long packageId, CancellationToken cancellationToken = default)
         {
-            return _api.Get().ToAsync<PackageSearchResult>(string.Format(CultureInfo.InvariantCulture, GetPackageUrl, projectId, packageId), cancellationToken);
+            return _api.Get().ToAsync<PackageSearchResult>(string.Format(CultureInfo.InvariantCulture, GetPackageUrl, projectId.ValueAsUriParameter(), packageId), cancellationToken);
         }
 
-        private static string CreateGetUrl(int projectId, PackageQuery query)
+        private static string CreateGetUrl(ProjectId projectId, PackageQuery query)
         {
-            var url = string.Format(CultureInfo.InvariantCulture, GetPackagesUrl, projectId);
+            var url = string.Format(CultureInfo.InvariantCulture, GetPackagesUrl, projectId.ValueAsUriParameter());
 
             url = Utils.AddParameter(url, "order_by", query.OrderBy);
             url = Utils.AddParameter(url, "sort", query.Sort);
@@ -51,7 +61,7 @@ namespace NGitLab.Impl
             url = Utils.AddParameter(url, "page", query.Page);
             url = Utils.AddParameter(url, "per_page", query.PerPage);
 
-            if (query.PackageType != PackageType.all)
+            if (query.PackageType != PackageType.All)
             {
                 url = Utils.AddParameter(url, "package_type", query.PackageType);
             }
@@ -59,6 +69,11 @@ namespace NGitLab.Impl
             if (!string.IsNullOrWhiteSpace(query.PackageName))
             {
                 url = Utils.AddParameter(url, "package_name", query.PackageName);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.PackageVersion))
+            {
+                url = Utils.AddParameter(url, "package_version", query.PackageVersion);
             }
 
             if (query.IncludeVersionless)
