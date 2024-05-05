@@ -12,6 +12,8 @@ namespace NGitLab.Models
 
         public string PackageName { get; set; }
 
+        public string PackageVersion { get; set; }
+
         public bool IncludeVersionless { get; set; }
 
         public PackageStatus Status { get; set; }

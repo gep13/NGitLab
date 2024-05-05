@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,6 +69,11 @@ namespace NGitLab.Impl
             if (!string.IsNullOrWhiteSpace(query.PackageName))
             {
                 url = Utils.AddParameter(url, "package_name", query.PackageName);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.PackageVersion))
+            {
+                url = Utils.AddParameter(url, "package_version", query.PackageVersion);
             }
 
             if (query.IncludeVersionless)
