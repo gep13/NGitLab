@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Net;
+using NGitLab.Impl.Json;
 
 namespace NGitLab.Impl
 {
@@ -8,7 +9,18 @@ namespace NGitLab.Impl
     {
         public static string AddParameter<T>(string url, string parameterName, T value)
         {
-            return Equals(value, null) ? url : AddParameterInternal(url, parameterName, value.ToString());
+            if (Equals(value, null))
+            {
+                return url;
+            }
+
+            if (typeof(T).IsEnum)
+            {
+                var parameterValue = value.GetEnumName();
+                return AddParameterInternal(url, parameterName, parameterValue);
+            }
+
+            return AddParameterInternal(url, parameterName, value.ToString());
         }
 
         public static string AddParameter(string url, string parameterName, int? value)

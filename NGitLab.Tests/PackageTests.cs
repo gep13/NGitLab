@@ -28,7 +28,7 @@ namespace NGitLab.Tests
 
             var newGenericPackage = await packagesClient.PublishGenericPackageAsync(project.Id, packagePublish);
 
-            var packageQuery = new PackageQuery { PackageType = PackageType.generic };
+            var packageQuery = new PackageQuery { PackageType = PackageType.Generic };
             var genericPackages = packagesClient.Get(project.Id, packageQuery).ToList();
             var singleGenericPackage = await packagesClient.GetByIdAsync(project.Id, newGenericPackage.PackageId);
 

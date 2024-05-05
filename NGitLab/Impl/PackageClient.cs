@@ -51,7 +51,7 @@ namespace NGitLab.Impl
             url = Utils.AddParameter(url, "page", query.Page);
             url = Utils.AddParameter(url, "per_page", query.PerPage);
 
-            if (query.PackageType != PackageType.all)
+            if (query.PackageType != PackageType.All)
             {
                 url = Utils.AddParameter(url, "package_type", query.PackageType);
             }

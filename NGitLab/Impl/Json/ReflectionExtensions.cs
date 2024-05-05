@@ -24,6 +24,31 @@ namespace NGitLab.Impl.Json
                 yield return new EnumMapping((Enum)enumValue, stringValue);
             }
         }
+
+        public static string GetEnumName(this object value)
+        {
+            var type = value.GetType();
+
+            if (!type.IsEnum)
+                throw new InvalidOperationException($"{nameof(GetEnumName)} must only be used on enum values");
+
+            var field = type.GetFields()
+                .Where(fi => fi.FieldType == type)
+                .Where(fi => Equals(fi.GetValue(null), value))
+                .Single();
+
+            var stringValue = field.GetCustomAttributes(typeof(EnumMemberAttribute), inherit: true)
+                .Cast<EnumMemberAttribute>()
+                .FirstOrDefault()?
+                .Value;
+
+            if (stringValue is null)
+            {
+                return Enum.GetName(type, value);
+            }
+
+            return stringValue;
+        }
     }
 
     internal readonly struct EnumMapping
